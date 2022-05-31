@@ -10,10 +10,9 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField]
     private float dodgeStrength;
 
+    private Player player;
     private Rigidbody2D rb;
-
     private Vector2 inputVector;
-
     private InputAction.CallbackContext lastRotationContext;
 
     private void Start()
@@ -30,6 +29,11 @@ public class PlayerMovementController : MonoBehaviour
         rb.velocity = inputVector * movementSpeed;
     }
 
+    public void Initialize(Player player)
+    {
+        this.player = player;
+    }
+
     private void Dodge(InputAction.CallbackContext context)
     {
         rb.AddForce(rb.velocity.normalized * dodgeStrength, ForceMode2D.Impulse);
@@ -37,21 +41,23 @@ public class PlayerMovementController : MonoBehaviour
 
     private void Look(InputAction.CallbackContext context)
     {
+        float angle = 0;
         if (InputController.Instance.PlayerActions.Rotate.activeControl?.device.description.deviceClass == "Mouse")
         {
             Vector2 mouseInput = InputController.Instance.PlayerActions.Rotate.ReadValue<Vector2>();
 
             Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(mouseInput.x, mouseInput.y, 0));
             Vector2 lookDirection = mouseWorld - transform.position;
-            float angle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg;
-            rb.rotation = angle;
+            angle = Mathf.Atan2(lookDirection.y, lookDirection.x);
         }
         else
         {
             Vector2 mouseInput = InputController.Instance.PlayerActions.Rotate.ReadValue<Vector2>();
 
-            float angle = Mathf.Atan2(mouseInput.y, mouseInput.x) * Mathf.Rad2Deg;
-            rb.rotation = angle;
+            angle = Mathf.Atan2(mouseInput.y, mouseInput.x);
         }
+
+        rb.rotation = angle * Mathf.Rad2Deg;
+        player.RotationRadian = angle;
     }
 }
